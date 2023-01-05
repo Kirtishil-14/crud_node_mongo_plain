@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+  </head>
+
+  <body>
+
+    <div>
+      name <input type="text" name="name" id="name">
+      <br>
+      new name <input type="text" name="newname" id="newname">
+      <br>
+      age <input type="text" name="age" id="age">
+    </div>
+    <br>
+    <button onclick="create_and_update_data('create')">create</button>
+    <button onclick="create_and_update_data('update')">update</button>
+    <button onclick="delete_data()">delete</button>
+
+    <br>
+    <br>
+    <div id="dynamic">
+
+    </div>
+
+    <script>
+      function get_all_data() {
+        fetch('http://127.0.0.1:5000')
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+            let container = document.getElementById('dynamic');
+            str = '';
+            data.map((e, i) => {
+              str += e.name + ' : ' + e.age + "<br/>";
+            });
+            console.log(str);
+            container.innerHTML = str;
+          });
+      }
+
+      function create_and_update_data(type) {
+        var name = document.getElementById('name').value;
+        var newname = document.getElementById('newname').value;
+        var age = document.getElementById('age').value;
+        if (name && age) {
+          const data = { name: name, age: age, newname: newname };
+          var url = 'http://127.0.0.1:5000/' + type;
+          fetch(url, {
+            method: 'POST', // or 'PUT'
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              console.log('Success:', data);
+              document.getElementById('name').value = '';
+              document.getElementById('newname').value = '';
+              document.getElementById('age').value = '';
+              get_all_data();
+
+            })
+            .catch((error) => {
+              console.error('Error:', error);
+              document.getElementById('name').value = '';
+              document.getElementById('age').value = '';
+            });
+        }
+      }
+
+      function delete_data() {
+        var name = document.getElementById('name').value;
+        var age = document.getElementById('age').value;
+        if (name && age) {
+          const data = { name: name, age: age };
+          fetch('http://127.0.0.1:5000/delete', {
+            method: 'DELETE', // or 'PUT'
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              document.getElementById('name').value = '';
+              document.getElementById('age').value = '';
+              get_all_data();
+            })
+            .catch((error) => {
+              console.error('Error:', error);
+              document.getElementById('name').value = '';
+              document.getElementById('age').value = '';
+            });
+        }
+      }
+
+      get_all_data();
+    </script>
+  </body>
+
+</html>
